@@ -1,57 +1,60 @@
-import React, {useState} from 'react'
-
-function computeInitialCounter() {
-    console.log('Some calculation ...')
-
-    return Math.trunc(Math.random() * 20)
-}
+import React, {useEffect, useState} from 'react'
 
 function App() {
-    // const [counter, setCounter] = useState(computeInitialCounter())
-
-    const [counter, setCounter] = useState(() => {
-        return computeInitialCounter()
+    const [type, setType] = useState('users')
+    const [data, setData] = useState([])
+    const [pos, setPos] = useState({
+        x: 0, y: 0
     })
 
-    const [state, setState] = useState({
-        title: 'Счетчик',
-        date: Date.now(),
-    })
-
-
-    function increment() {
-        // setCounter(counter + 1)
-        // setCounter(counter + 1)
-
-        setCounter((prevCounter) => {
-            return prevCounter + 1
+    const mouseMoveHandler = event => {
+        setPos({
+            x: event.clientX,
+            y: event.clientY
         })
-        setCounter(prev => prev + 1)
     }
 
-    function decrement() {
-        setCounter(counter - 1)
-    }
+    console.log('Component render')
 
-    function updateTitle() {
-        setState(prev => {
-                return {
-                    ...prev,
-                    title: "Новое название"
-                }
-            }
-        )
-    }
+    // useEffect(() => {
+    //     console.log('render')
+    // })
+
+    useEffect(() => {
+        console.log(`type change ${type}`)
+
+        fetch(`https://jsonplaceholder.typicode.com/${type}`)
+            .then(response => response.json())
+            .then(json => setData(json))
+
+        return () => {
+            console.log('clean type')
+        }
+    }, [type])
+
+    useEffect(() => {
+        console.log('Component did mount')
+
+        // подписываемся на событие
+        window.addEventListener('mousemove', mouseMoveHandler)
+
+        // будет вызвано только когда компонент удалится
+        return () => {
+            // отписываемся от события
+            window.removeEventListener('mousemove', mouseMoveHandler)
+        }
+    }, [])
 
     return (
         <div>
-            <h1>Счетчик {counter}</h1>
-            <button onClick={increment} className="btn btn-success">Добавить</button>
-            <button onClick={decrement} className="btn btn-danger">Убрать</button>
+            <h1>Ресурс: {type}</h1>
 
-            <button onClick={updateTitle} className="btn btn-default">Изменить название</button>
+            <button onClick={() => setType('users')}>Пользователи</button>
+            <button onClick={() => setType('todos')}>Todos</button>
+            <button onClick={() => setType('posts')}>Посты</button>
 
-            <pre>{JSON.stringify(state, null, 2)}</pre>
+            {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
+            <pre>{JSON.stringify(pos, null, 2)}</pre>
         </div>
     )
 }
