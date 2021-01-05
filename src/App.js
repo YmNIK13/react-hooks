@@ -1,36 +1,27 @@
-import React, {useEffect, useMemo, useState} from 'react'
-
-function complexCompute(num) {
-    console.log('complexCompute')
-    let i = 0
-    while (i < 1000000000) i++
-
-    return num * 2
-}
+import React, {useState, useCallback} from 'react'
+import ItemsList from "./ItemsList";
 
 function App() {
-    const [number, setNumber] = useState(42)
     const [colored, setColored] = useState(false)
+    const [count, setCount] = useState(1)
 
-    // по сути кеширет значение, и вызовет рендер только когда значение будет изменено
-    const styles = useMemo(() => ({
+    const styles = {
         color: colored ? 'darkred' : 'black'
-    }), [colored])
+    }
 
-    // помещаем выполнение в ассинхронный поток, чтоб не тормозить общий рендер
-    const computed = useMemo(() => complexCompute(number), [number])
+    const generateItemsFromAPI = useCallback( (indexNumber) => {
+        return new Array(count).fill('').map((_, i) => `Элемент ${i + indexNumber}`)
+    }, [count])
 
-    useEffect(() => {
-        console.log('Styles changed')
-    }, [styles])
 
     return (
         <>
-            <h1 style={styles}>Вычисляемое свойство: {computed}</h1>
-            <button onClick={() => setNumber(prev => prev + 1)} className="btn btn-success">Добавить</button>
-            <button onClick={() => setNumber(prev => prev - 1)} className="btn btn-danger">Убрать</button>
+            <h1 style={styles}>Количество элементов: {count}</h1>
+            <button onClick={() => setCount(prev => prev + 1)} className="btn btn-success">Добавить</button>
 
             <button onClick={() => setColored(prev => !prev)} className="btn btn-warning">Изменить</button>
+
+            <ItemsList getItems={generateItemsFromAPI}/>
         </>
     )
 }
