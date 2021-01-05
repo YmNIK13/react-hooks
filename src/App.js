@@ -1,40 +1,37 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 
-let renderCount = 1
+function complexCompute(num) {
+    console.log('complexCompute')
+    let i = 0
+    while (i < 1000000000) i++
+
+    return num * 2
+}
 
 function App() {
-    // const [renderCount, setRenderCount] = useState(1)
-    // eslint-disable-next-line no-undef
-    const [value, setValue] = useState('initial')
-    const renderCountRef = useRef(1)
-    const inputRef = useRef(null)
-    const prevValue = useRef('')
+    const [number, setNumber] = useState(42)
+    const [colored, setColored] = useState(false)
+
+    // по сути кеширет значение, и вызовет рендер только когда значение будет изменено
+    const styles = useMemo(() => ({
+        color: colored ? 'darkred' : 'black'
+    }), [colored])
+
+    // помещаем выполнение в ассинхронный поток, чтоб не тормозить общий рендер
+    const computed = useMemo(() => complexCompute(number), [number])
 
     useEffect(() => {
-        // setRenderCount(prev => prev + 1)
-
-        renderCount++;
-
-        renderCountRef.current++;
-
-        console.log(inputRef.current)
-    })
-
-    useEffect(() => {
-        // сработает до изменения
-        prevValue.current = value
-    }, [value])
-
-    const focus = () => inputRef.current.focus()
+        console.log('Styles changed')
+    }, [styles])
 
     return (
-        <div>
-            <h1>Количество рендеров: {renderCount} ==> {renderCountRef.current}</h1>
-            <hr/>
-            <h2>Прошлое состояние: {prevValue.current}</h2>
-            <input ref={inputRef} type="text" onChange={e => setValue(e.target.value)} value={value}/>
-            <button className='btn btn-success' onClick={focus}>Фокус</button>
-        </div>
+        <>
+            <h1 style={styles}>Вычисляемое свойство: {computed}</h1>
+            <button onClick={() => setNumber(prev => prev + 1)} className="btn btn-success">Добавить</button>
+            <button onClick={() => setNumber(prev => prev - 1)} className="btn btn-danger">Убрать</button>
+
+            <button onClick={() => setColored(prev => !prev)} className="btn btn-warning">Изменить</button>
+        </>
     )
 }
 
