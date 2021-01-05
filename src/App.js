@@ -1,60 +1,39 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
+
+let renderCount = 1
 
 function App() {
-    const [type, setType] = useState('users')
-    const [data, setData] = useState([])
-    const [pos, setPos] = useState({
-        x: 0, y: 0
+    // const [renderCount, setRenderCount] = useState(1)
+    // eslint-disable-next-line no-undef
+    const [value, setValue] = useState('initial')
+    const renderCountRef = useRef(1)
+    const inputRef = useRef(null)
+    const prevValue = useRef('')
+
+    useEffect(() => {
+        // setRenderCount(prev => prev + 1)
+
+        renderCount++;
+
+        renderCountRef.current++;
+
+        console.log(inputRef.current)
     })
 
-    const mouseMoveHandler = event => {
-        setPos({
-            x: event.clientX,
-            y: event.clientY
-        })
-    }
-
-    console.log('Component render')
-
-    // useEffect(() => {
-    //     console.log('render')
-    // })
-
     useEffect(() => {
-        console.log(`type change ${type}`)
+        // сработает до изменения
+        prevValue.current = value
+    }, [value])
 
-        fetch(`https://jsonplaceholder.typicode.com/${type}`)
-            .then(response => response.json())
-            .then(json => setData(json))
-
-        return () => {
-            console.log('clean type')
-        }
-    }, [type])
-
-    useEffect(() => {
-        console.log('Component did mount')
-
-        // подписываемся на событие
-        window.addEventListener('mousemove', mouseMoveHandler)
-
-        // будет вызвано только когда компонент удалится
-        return () => {
-            // отписываемся от события
-            window.removeEventListener('mousemove', mouseMoveHandler)
-        }
-    }, [])
+    const focus = () => inputRef.current.focus()
 
     return (
         <div>
-            <h1>Ресурс: {type}</h1>
-
-            <button onClick={() => setType('users')}>Пользователи</button>
-            <button onClick={() => setType('todos')}>Todos</button>
-            <button onClick={() => setType('posts')}>Посты</button>
-
-            {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
-            <pre>{JSON.stringify(pos, null, 2)}</pre>
+            <h1>Количество рендеров: {renderCount} ==> {renderCountRef.current}</h1>
+            <hr/>
+            <h2>Прошлое состояние: {prevValue.current}</h2>
+            <input ref={inputRef} type="text" onChange={e => setValue(e.target.value)} value={value}/>
+            <button className='btn btn-success' onClick={focus}>Фокус</button>
         </div>
     )
 }
